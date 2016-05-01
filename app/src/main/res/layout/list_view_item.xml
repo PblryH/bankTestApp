@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:background="@drawable/white_touch"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/small"
+        tools:text="Aardvark"
+        android:textColor="@android:color/primary_text_light" />
+    <TextView
+        android:id="@+id/bic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:textSize="13sp"
+        tools:text="Aardvark"
+        android:textColor="@android:color/secondary_text_light"
+        android:paddingTop="0dp"
+        android:paddingLeft="@dimen/small"
+        android:paddingRight="@dimen/small"
+        android:paddingBottom="@dimen/small" />
+</LinearLayout>
