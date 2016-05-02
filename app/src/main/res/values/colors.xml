@@ -4,6 +4,8 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
+    <color name="primaryText">#DD000000</color>
+    <color name="secondaryText">#88000000</color>
 
     <color name="GreySalsa">#ACB5C3</color>
     <color name="EmptyPlaceholder">@color/GreySalsa</color>

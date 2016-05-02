@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">BankTestApp</string>
     <string name="empty">empty</string>
+    <string name="list_view_item_bic">БИК: %s</string>
 </resources>
