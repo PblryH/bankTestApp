@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -51,21 +52,29 @@ public class BanksListAdapter
                 vh.ks.setVisibility(View.GONE);
                 vh.address.setVisibility(View.GONE);
                 vh.phone.setVisibility(View.GONE);
+                vh.loadingBlock.setVisibility(View.GONE);
+                vh.retryBlock.setVisibility(View.GONE);
                 break;
             case FULL:
                 vh.ks.setVisibility(View.VISIBLE);
                 vh.address.setVisibility(View.VISIBLE);
                 vh.phone.setVisibility(View.VISIBLE);
+                vh.loadingBlock.setVisibility(View.GONE);
+                vh.retryBlock.setVisibility(View.GONE);
                 break;
             case IN_PROGRESS:
                 vh.ks.setVisibility(View.GONE);
                 vh.address.setVisibility(View.GONE);
                 vh.phone.setVisibility(View.GONE);
+                vh.loadingBlock.setVisibility(View.VISIBLE);
+                vh.retryBlock.setVisibility(View.GONE);
                 break;
             case REPEAT:
                 vh.ks.setVisibility(View.GONE);
                 vh.address.setVisibility(View.GONE);
                 vh.phone.setVisibility(View.GONE);
+                vh.loadingBlock.setVisibility(View.GONE);
+                vh.retryBlock.setVisibility(View.VISIBLE);
                 break;
         }
 
@@ -97,6 +106,8 @@ public class BanksListAdapter
 
         private ImageView expandIcon;
         private TextView name, bic, ks, address, phone;
+        private View retryBlock, loadingBlock;
+        private Button retryButton;
         private BanksListAdapter mMessageListAdapter;
 
         public BankItemViewHolderForRecyclerView(BanksListAdapter messageListAdapter, View itemView) {
@@ -110,6 +121,9 @@ public class BanksListAdapter
             ks = vh.ks;
             address = vh.address;
             phone = vh.phone;
+            retryBlock = vh.retryBlock;
+            loadingBlock = vh.loadingBlock;
+            retryButton = vh.retryButton;
             itemView.setOnClickListener(this);
 
         }
@@ -130,6 +144,8 @@ public class BanksListAdapter
 
         public ImageView expandIcon;
         public TextView name, bic, ks, address, phone;
+        public View retryBlock, loadingBlock;
+        public Button retryButton;
 
         public BankItemViewHolder(View itemView) {
             expandIcon = (ImageView) itemView.findViewById(R.id.expandIcon);
@@ -138,6 +154,9 @@ public class BanksListAdapter
             ks = (TextView) itemView.findViewById(R.id.ks);
             address = (TextView) itemView.findViewById(R.id.address);
             phone = (TextView) itemView.findViewById(R.id.phone);
+            loadingBlock = itemView.findViewById(R.id.loadingBlock);
+            retryBlock = itemView.findViewById(R.id.retryBlock);
+            retryButton = (Button) itemView.findViewById(R.id.retryButton);
         }
     }
 

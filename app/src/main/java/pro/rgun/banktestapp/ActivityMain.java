@@ -71,7 +71,25 @@ public class ActivityMain extends AppCompatActivity {
             public void onItemClick(View view, final int position, ListItemBankModel object) {
                 final BanksListAdapter.BankItemViewHolder vh = new BanksListAdapter.BankItemViewHolder(view);
 
-                object.isExpanded = !object.isExpanded;
+
+                switch (object.state){
+                    case SHORT:
+                        object.state = ListItemBankModel.State.FULL;
+                        object.isExpanded = true;
+                        break;
+                    case FULL:
+                        object.state = ListItemBankModel.State.IN_PROGRESS;
+                        object.isExpanded = true;
+                        break;
+                    case IN_PROGRESS:
+                        object.state = ListItemBankModel.State.REPEAT;
+                        object.isExpanded = true;
+                        break;
+                    case REPEAT:
+                        object.state = ListItemBankModel.State.SHORT;
+                        object.isExpanded = false;
+                        break;
+                }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 

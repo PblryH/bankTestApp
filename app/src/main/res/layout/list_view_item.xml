@@ -73,7 +73,7 @@
             android:visibility="gone" />
 
         <RelativeLayout
-            android:id="@+id/loading"
+            android:id="@+id/loadingBlock"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="@dimen/small"
@@ -102,11 +102,12 @@
         </RelativeLayout>
 
         <LinearLayout
+            android:id="@+id/retryBlock"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:paddingBottom="@dimen/small"
             android:paddingTop="@dimen/small"
-            android:orientation="vertical"
             android:visibility="gone">
 
             <TextView
@@ -115,14 +116,15 @@
                 android:text="@string/loadingError"
                 android:textColor="@color/ErrorText" />
 
-                <Button
-                    style="?attr/borderlessButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/ic_refresh_24dp"
-                    android:drawableStart="@drawable/ic_refresh_24dp"
-                    android:text="@string/retry"
-                    android:textColor="@color/RefreshButton"/>
+            <Button
+                android:id="@+id/retryButton"
+                style="?attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ic_refresh_24dp"
+                android:drawableStart="@drawable/ic_refresh_24dp"
+                android:text="@string/retry"
+                android:textColor="@color/RefreshButton" />
         </LinearLayout>
 
     </LinearLayout>
