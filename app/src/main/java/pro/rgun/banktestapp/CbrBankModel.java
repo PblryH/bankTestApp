@@ -14,6 +14,4 @@ public class CbrBankModel implements Serializable {
     public String ShortName;
     public String Bic;
 
-    public boolean isExpanded = false;
-
 }

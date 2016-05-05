@@ -14,12 +14,12 @@ import java.util.ArrayList;
  * Created by rgun on 03.12.15.
  */
 public class BanksListAdapter
-        extends ListAdapter<CbrBankModel, BanksListAdapter.BankItemViewHolderForRecyclerView> {
+        extends ListAdapter<ListItemBankModel, BanksListAdapter.BankItemViewHolderForRecyclerView> {
 
     private OnItemClickListener listener;
 
     public BanksListAdapter() {
-        super(new ArrayList<CbrBankModel>());
+        super(new ArrayList<ListItemBankModel>());
     }
 
     @Override
@@ -32,24 +32,46 @@ public class BanksListAdapter
 
     @Override
     protected void bindNormalViewHolder(final BankItemViewHolderForRecyclerView vh, int position) {
-        CbrBankModel model = getItem(position);
+        ListItemBankModel model = getItem(position);
         vh.name.setText(model.ShortName);
         Application application = (Application) Application.context;
         vh.bic.setText(String.format(application.getString(R.string.list_view_item_bic), model.Bic));
         if(model.isExpanded) {
             vh.expandIcon.setImageDrawable(
                     application.getResources()
-                            .getDrawable(R.drawable.ic_keyboard_arrow_up_black_24dp));
-            vh.ks.setVisibility(View.VISIBLE);
+                            .getDrawable(R.drawable.ic_keyboard_arrow_up_24dp));
         } else {
             vh.expandIcon.setImageDrawable(
                     application.getResources()
-                            .getDrawable(R.drawable.ic_keyboard_arrow_down_black_24dp));
-            vh.ks.setVisibility(View.GONE);
+                            .getDrawable(R.drawable.ic_keyboard_arrow_down_24dp));
         }
+
+        switch (model.state) {
+            case SHORT:
+                vh.ks.setVisibility(View.GONE);
+                vh.address.setVisibility(View.GONE);
+                vh.phone.setVisibility(View.GONE);
+                break;
+            case FULL:
+                vh.ks.setVisibility(View.VISIBLE);
+                vh.address.setVisibility(View.VISIBLE);
+                vh.phone.setVisibility(View.VISIBLE);
+                break;
+            case IN_PROGRESS:
+                vh.ks.setVisibility(View.GONE);
+                vh.address.setVisibility(View.GONE);
+                vh.phone.setVisibility(View.GONE);
+                break;
+            case REPEAT:
+                vh.ks.setVisibility(View.GONE);
+                vh.address.setVisibility(View.GONE);
+                vh.phone.setVisibility(View.GONE);
+                break;
+        }
+
     }
 
-    public CbrBankModel getItem(int position) {
+    public ListItemBankModel getItem(int position) {
         return getItemAt(position);
     }
 
@@ -74,7 +96,7 @@ public class BanksListAdapter
             implements View.OnClickListener {
 
         private ImageView expandIcon;
-        private TextView name, bic, ks;
+        private TextView name, bic, ks, address, phone;
         private BanksListAdapter mMessageListAdapter;
 
         public BankItemViewHolderForRecyclerView(BanksListAdapter messageListAdapter, View itemView) {
@@ -86,6 +108,8 @@ public class BanksListAdapter
             name = vh.name;
             bic = vh.bic;
             ks = vh.ks;
+            address = vh.address;
+            phone = vh.phone;
             itemView.setOnClickListener(this);
 
         }
@@ -105,13 +129,15 @@ public class BanksListAdapter
         public static final int layout = R.layout.list_view_item;
 
         public ImageView expandIcon;
-        public TextView name, bic, ks;
+        public TextView name, bic, ks, address, phone;
 
         public BankItemViewHolder(View itemView) {
             expandIcon = (ImageView) itemView.findViewById(R.id.expandIcon);
             name = (TextView) itemView.findViewById(R.id.name);
             bic = (TextView) itemView.findViewById(R.id.bic);
             ks = (TextView) itemView.findViewById(R.id.ks);
+            address = (TextView) itemView.findViewById(R.id.address);
+            phone = (TextView) itemView.findViewById(R.id.phone);
         }
     }
 

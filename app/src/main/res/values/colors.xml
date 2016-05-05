@@ -3,10 +3,19 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="BlueGrey50">#ECEFF1</color>
+    <color name="Green500">#4CAF50</color>
+    <color name="Red500">#F44336</color>
+    <color name="Blue500">#2196F3</color>
 
     <color name="primaryText">#DD000000</color>
     <color name="secondaryText">#88000000</color>
 
-    <color name="GreySalsa">#ACB5C3</color>
-    <color name="EmptyPlaceholder">@color/GreySalsa</color>
+    <color name="EmptyPlaceholder">@color/BlueGrey50</color>
+    <color name="WhiteTouchPressed">@color/BlueGrey50</color>
+    <color name="Progress">@color/Green500</color>
+    <color name="LoadText">@color/Green500</color>
+    <color name="ErrorText">@color/Red500</color>
+    <color name="RefreshIcon">@color/Blue500</color>
+    <color name="RefreshButton">@color/Blue500</color>
 </resources>

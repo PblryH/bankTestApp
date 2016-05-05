@@ -29,15 +29,15 @@ public class ActivityMain extends AppCompatActivity {
         createMock();
     }
 
-    private CbrBankModel createCbrBankModel() {
-        CbrBankModel cbrBankModel = new CbrBankModel();
+    private ListItemBankModel createCbrBankModel() {
+        ListItemBankModel cbrBankModel = new ListItemBankModel();
         cbrBankModel.ShortName = "Банк";
         cbrBankModel.Bic = "34534546";
         return cbrBankModel;
     }
 
     private void createMock() {
-        ArrayList<CbrBankModel> mockedArray = new ArrayList<>();
+        ArrayList<ListItemBankModel> mockedArray = new ArrayList<>();
         mockedArray.add(createCbrBankModel());
         mockedArray.add(createCbrBankModel());
         mockedArray.add(createCbrBankModel());
@@ -66,43 +66,12 @@ public class ActivityMain extends AppCompatActivity {
                 refreshItems();
             }
         });
-        mAdapter.setOnItemClickListener(new BanksListAdapter.OnItemClickListener<CbrBankModel>() {
+        mAdapter.setOnItemClickListener(new BanksListAdapter.OnItemClickListener<ListItemBankModel>() {
             @Override
-            public void onItemClick(View view, final int position, CbrBankModel object) {
+            public void onItemClick(View view, final int position, ListItemBankModel object) {
                 final BanksListAdapter.BankItemViewHolder vh = new BanksListAdapter.BankItemViewHolder(view);
 
                 object.isExpanded = !object.isExpanded;
-
-
-//                ObjectAnimator anim = ObjectAnimator.ofFloat(vh.expandIcon, "rotation", 0f, 180f);
-//                anim.setDuration(2500);                  // Duration in milliseconds
-//                anim.setInterpolator(new LinearInterpolator());  // E.g. Linear, Accelerate, Decelerate
-//                anim.addListener(new Animator.AnimatorListener() {
-//                    @Override
-//                    public void onAnimationStart(Animator animation) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onAnimationEnd(Animator animation) {
-//                        vh.expandIcon.clearAnimation();
-//                        mAdapter.notifyItemChanged(position);
-//                    }
-//
-//                    @Override
-//                    public void onAnimationCancel(Animator animation) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onAnimationRepeat(Animator animation) {
-//
-//                    }
-//                });
-//                if(object.isExpanded)
-//                anim.reverse();
-//                anim.start();
-
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 
@@ -118,10 +87,6 @@ public class ActivityMain extends AppCompatActivity {
                         @Override
                         public void onAnimationEnd(Animation animation) {
                             mAdapter.notifyItemChanged(position);
-
-//                            vh.expandIcon.setImageDrawable(
-//                                    ActivityMain.this.getResources()
-//                                            .getDrawable(R.drawable.ic_keyboard_arrow_up_black_24dp));
                         }
 
                         @Override
@@ -129,10 +94,9 @@ public class ActivityMain extends AppCompatActivity {
 
                         }
                     });
-
                     vh.expandIcon.startAnimation(anim);
                     anim.setFillAfter(true);
-                    anim.start();                             // Begin the animation
+                    anim.start();
 
                 } else {
                     mAdapter.notifyItemChanged(position);
@@ -158,7 +122,7 @@ public class ActivityMain extends AppCompatActivity {
         vh.swipeRefreshLayout.setRefreshing(false);
     }
 
-    public void addDataToRecyclerView(ArrayList<CbrBankModel> data) {
+    public void addDataToRecyclerView(ArrayList<ListItemBankModel> data) {
         mAdapter.addAll(data);
     }
 }

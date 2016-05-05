@@ -12,15 +12,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/medium"
-        android:src="@drawable/ic_keyboard_arrow_down_black_24dp" />
+        android:src="@drawable/ic_keyboard_arrow_down_24dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/list_view_item_text_left_margin"
-        android:layout_marginStart="@dimen/list_view_item_text_left_margin"
-        android:layout_marginRight="@dimen/medium"
         android:layout_marginEnd="@dimen/medium"
+        android:layout_marginLeft="@dimen/list_view_item_text_left_margin"
+        android:layout_marginRight="@dimen/medium"
+        android:layout_marginStart="@dimen/list_view_item_text_left_margin"
         android:layout_marginTop="@dimen/small"
         android:orientation="vertical">
 
@@ -47,30 +47,83 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:text="КОР. СЧЕТ: "
             android:textColor="@color/secondaryText"
             android:textSize="@dimen/list_view_item_text"
-            android:visibility="gone"
-            android:text="КОР. СЧЕТ: " />
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/address"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:text="КОР. СЧЕТ: "
             android:textColor="@color/secondaryText"
             android:textSize="@dimen/list_view_item_text"
-            android:visibility="gone"
-            android:text="КОР. СЧЕТ: " />
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/phone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:text="Телефон: "
             android:textColor="@color/secondaryText"
             android:textSize="@dimen/list_view_item_text"
-            android:visibility="gone"
-            android:text="Телефон: " />
+            android:visibility="gone" />
+
+        <RelativeLayout
+            android:id="@+id/loading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/small"
+            android:paddingTop="@dimen/small"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:id="@+id/progress"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:indeterminate="true"
+                android:indeterminateDrawable="@drawable/progress" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/small"
+                android:layout_marginStart="@dimen/small"
+                android:layout_toEndOf="@+id/progress"
+                android:layout_toRightOf="@+id/progress"
+                android:text="@string/loading"
+                android:textColor="@color/LoadText" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/small"
+            android:paddingTop="@dimen/small"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/loadingError"
+                android:textColor="@color/ErrorText" />
+
+                <Button
+                    style="?attr/borderlessButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableLeft="@drawable/ic_refresh_24dp"
+                    android:drawableStart="@drawable/ic_refresh_24dp"
+                    android:text="@string/retry"
+                    android:textColor="@color/RefreshButton"/>
+        </LinearLayout>
 
     </LinearLayout>
 </RelativeLayout>

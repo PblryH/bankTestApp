@@ -2,4 +2,7 @@
     <string name="app_name">BankTestApp</string>
     <string name="empty">empty</string>
     <string name="list_view_item_bic">БИК: %s</string>
+    <string name="loading">ЗАГРУЗКА...</string>
+    <string name="loadingError">Ошибка при загрузке</string>
+    <string name="retry">ПОВТОРИТЬ</string>
 </resources>
