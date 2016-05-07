@@ -11,7 +11,7 @@
     <color name="primaryText">#DD000000</color>
     <color name="secondaryText">#88000000</color>
 
-    <color name="EmptyPlaceholder">@color/BlueGrey50</color>
+    <color name="EmptyPlaceholder">@color/secondaryText</color>
     <color name="WhiteTouchPressed">@color/BlueGrey50</color>
     <color name="Progress">@color/Green500</color>
     <color name="LoadText">@color/Green500</color>

@@ -1,6 +1,5 @@
 package pro.rgun.banktestapp;
 
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -13,9 +12,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ActivityMain extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
@@ -24,6 +23,10 @@ public class ActivityMain extends AppCompatActivity implements SearchView.OnQuer
     private BanksListAdapter mAdapter;
     private MenuItem mActionMenuItem;
     private SearchView mSearchView;
+    private ArrayList<ListItemBankModel> mockedArray;
+    private String[] names = new String[]{"новый","второй","третий", "Четвертый", "Четвертый", "шестой"};
+    private Integer[] bics = new Integer[]{12312,154676,78679,3444777,5565773,234324};
+
 
     ///////////////////////////////////////////////////////////////////////////
     // Activity Lifecycle
@@ -33,9 +36,8 @@ public class ActivityMain extends AppCompatActivity implements SearchView.OnQuer
         super.onCreate(savedInstanceState);
         setContentView(VHMain.layout);
         vh = new VHMain(this);
-        initToolbar();
+        setSupportActionBar(vh.toolbar);
         initAdapter();
-        createMock();
     }
 
     @Override
@@ -50,36 +52,47 @@ public class ActivityMain extends AppCompatActivity implements SearchView.OnQuer
     }
 
 
+    ///////////////////////////////////////////////////////////////////////////
+    // SearchView.OnQueryTextListener impl
+    ///////////////////////////////////////////////////////////////////////////
+
     @Override
-    protected void onNewIntent(Intent intent) {
-        intent.toString();
+    public boolean onQueryTextSubmit(String query) {
+        return false;
     }
 
-    private void initToolbar() {
-        setSupportActionBar(vh.toolbar);
+    @Override
+    public boolean onQueryTextChange(String newText) {
+            search(newText);
+        return false;
     }
 
-    private ListItemBankModel createCbrBankModel() {
+    private void search(String query){
+        final List<ListItemBankModel> list;
+        if (query.isEmpty()) {
+            list = mockedArray;
+        }
+        else {
+            list = filter(mockedArray, query);
+        }
+        mAdapter.clear();
+        addDataToRecyclerView(list);
+        vh.recyclerView.scrollToPosition(0);
+    }
+
+
+    private ListItemBankModel createCbrBankModel(String name, Integer bic) {
         ListItemBankModel cbrBankModel = new ListItemBankModel();
-        cbrBankModel.ShortName = "Банк";
-        cbrBankModel.Bic = "34534546";
+        cbrBankModel.ShortName = name;
+        cbrBankModel.Bic = String.valueOf(bic);
         return cbrBankModel;
     }
 
     private void createMock() {
-        ArrayList<ListItemBankModel> mockedArray = new ArrayList<>();
-        mockedArray.add(createCbrBankModel());
-        mockedArray.add(createCbrBankModel());
-        mockedArray.add(createCbrBankModel());
-        mockedArray.add(createCbrBankModel());
-        mockedArray.add(createCbrBankModel());
-        mockedArray.add(createCbrBankModel());
-        mockedArray.add(createCbrBankModel());
-        mockedArray.add(createCbrBankModel());
-        mockedArray.add(createCbrBankModel());
-        mockedArray.add(createCbrBankModel());
-        mockedArray.add(createCbrBankModel());
-        mockedArray.add(createCbrBankModel());
+        mockedArray = new ArrayList<>();
+        for (int i = 0; i < names.length; i++) {
+            mockedArray.add(createCbrBankModel(names[i],bics[i]));
+        }
         addDataToRecyclerView(mockedArray);
     }
 
@@ -102,10 +115,12 @@ public class ActivityMain extends AppCompatActivity implements SearchView.OnQuer
                 final BanksListAdapter.BankItemViewHolder vh = new BanksListAdapter.BankItemViewHolder(view);
 
 
+                boolean animate = false;
                 switch (object.state) {
                     case SHORT:
                         object.state = ListItemBankModel.State.FULL;
                         object.isExpanded = true;
+                        animate = true;
                         break;
                     case FULL:
                         object.state = ListItemBankModel.State.IN_PROGRESS;
@@ -118,10 +133,11 @@ public class ActivityMain extends AppCompatActivity implements SearchView.OnQuer
                     case REPEAT:
                         object.state = ListItemBankModel.State.SHORT;
                         object.isExpanded = false;
+                        animate = true;
                         break;
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && animate) {
 
                     final Animation anim = AnimationUtils.loadAnimation(
                             ActivityMain.this, R.anim.rotate_around_center_point_to_up);
@@ -170,29 +186,22 @@ public class ActivityMain extends AppCompatActivity implements SearchView.OnQuer
         vh.swipeRefreshLayout.setRefreshing(false);
     }
 
-    public void addDataToRecyclerView(ArrayList<ListItemBankModel> data) {
+    public void addDataToRecyclerView(List<ListItemBankModel> data) {
         mAdapter.addAll(data);
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // SearchView.OnQueryTextListener impl
-    ///////////////////////////////////////////////////////////////////////////
 
-    @Override
-    public boolean onQueryTextSubmit(String query) {
-        Toast.makeText(ActivityMain.this, "onQueryTextSubmit " + query, Toast.LENGTH_SHORT).show();
-        if (!mSearchView.isIconified()) {
-            mSearchView.setIconified(true);
+    private List<ListItemBankModel> filter(List<ListItemBankModel> models, String query) {
+        query = query.toLowerCase();
+        final List<ListItemBankModel> filteredModelList = new ArrayList<>();
+        for (ListItemBankModel model : models) {
+            final String name = model.ShortName.toLowerCase();
+            final String bic = model.Bic;
+            if (name.contains(query) || bic.contains(query)) {
+                filteredModelList.add(model);
+            }
         }
-        mActionMenuItem.collapseActionView();
-        return false;
+        return filteredModelList;
     }
 
-    @Override
-    public boolean onQueryTextChange(String newText) {
-        if (!newText.isEmpty()) {
-            Toast.makeText(ActivityMain.this, newText, Toast.LENGTH_SHORT).show();
-        }
-        return false;
-    }
 }
