@@ -44,6 +44,7 @@ public class ActivityMain extends AppCompatActivity implements SearchView.OnQuer
         inflater.inflate(R.menu.menu_main, menu);
         mActionMenuItem = menu.findItem(R.id.action_search);
         mSearchView = (SearchView) mActionMenuItem.getActionView();
+        mSearchView.setQueryHint(getString(R.string.search_hint));
         mSearchView.setOnQueryTextListener(this);
         return true;
     }
