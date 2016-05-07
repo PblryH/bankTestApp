@@ -1,21 +1,29 @@
 package pro.rgun.banktestapp;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.SearchView;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class ActivityMain extends AppCompatActivity {
+public class ActivityMain extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
     private VHMain vh;
     private LinearLayoutManager mLayoutManager;
     private BanksListAdapter mAdapter;
+    private MenuItem mActionMenuItem;
+    private SearchView mSearchView;
 
     ///////////////////////////////////////////////////////////////////////////
     // Activity Lifecycle
@@ -25,8 +33,29 @@ public class ActivityMain extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(VHMain.layout);
         vh = new VHMain(this);
+        initToolbar();
         initAdapter();
         createMock();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        mActionMenuItem = menu.findItem(R.id.action_search);
+        mSearchView = (SearchView) mActionMenuItem.getActionView();
+        mSearchView.setOnQueryTextListener(this);
+        return true;
+    }
+
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        intent.toString();
+    }
+
+    private void initToolbar() {
+        setSupportActionBar(vh.toolbar);
     }
 
     private ListItemBankModel createCbrBankModel() {
@@ -72,7 +101,7 @@ public class ActivityMain extends AppCompatActivity {
                 final BanksListAdapter.BankItemViewHolder vh = new BanksListAdapter.BankItemViewHolder(view);
 
 
-                switch (object.state){
+                switch (object.state) {
                     case SHORT:
                         object.state = ListItemBankModel.State.FULL;
                         object.isExpanded = true;
@@ -142,5 +171,27 @@ public class ActivityMain extends AppCompatActivity {
 
     public void addDataToRecyclerView(ArrayList<ListItemBankModel> data) {
         mAdapter.addAll(data);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // SearchView.OnQueryTextListener impl
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        Toast.makeText(ActivityMain.this, "onQueryTextSubmit " + query, Toast.LENGTH_SHORT).show();
+        if (!mSearchView.isIconified()) {
+            mSearchView.setIconified(true);
+        }
+        mActionMenuItem.collapseActionView();
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        if (!newText.isEmpty()) {
+            Toast.makeText(ActivityMain.this, newText, Toast.LENGTH_SHORT).show();
+        }
+        return false;
     }
 }

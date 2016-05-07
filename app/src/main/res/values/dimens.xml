@@ -6,4 +6,5 @@
     <dimen name="medium">16dp</dimen>
     <dimen name="list_view_item_text">13sp</dimen>
     <dimen name="list_view_item_text_left_margin">72dp</dimen>
+    <dimen name="elevation_toolbar">4dp</dimen>
 </resources>
