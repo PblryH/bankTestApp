@@ -1,4 +1,4 @@
-package pro.rgun.banktestapp;
+package pro.rgun.banktestapp.screen.main;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,6 +9,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+
+import pro.rgun.banktestapp.Application;
+import pro.rgun.banktestapp.R;
+import pro.rgun.banktestapp.screen.ListAdapter;
 
 
 /**

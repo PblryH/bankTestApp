@@ -1,4 +1,4 @@
-package pro.rgun.banktestapp;
+package pro.rgun.banktestapp.screen;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;

@@ -1,9 +1,8 @@
-package pro.rgun.banktestapp;
+package pro.rgun.banktestapp.screen.main;
 
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
@@ -12,20 +11,32 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Toast;
+
+import com.octo.android.robospice.persistence.DurationInMillis;
+import com.octo.android.robospice.persistence.exception.SpiceException;
+import com.octo.android.robospice.request.listener.RequestListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ActivityMain extends AppCompatActivity implements SearchView.OnQueryTextListener {
+import pro.rgun.banktestapp.R;
+import pro.rgun.banktestapp.model.CbrBankModel;
+import pro.rgun.banktestapp.model.Record;
+import pro.rgun.banktestapp.network.BanksListRetrofitSpiceRequest;
+import pro.rgun.banktestapp.screen.BaseSpiceActivity;
 
+public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQueryTextListener {
+
+
+    private CbrBankModel mCbrBankModel;
+    private BanksListRetrofitSpiceRequest banksListRetrofitSpiceRequest;
     private VHMain vh;
     private LinearLayoutManager mLayoutManager;
     private BanksListAdapter mAdapter;
     private MenuItem mActionMenuItem;
     private SearchView mSearchView;
-    private ArrayList<ListItemBankModel> mockedArray;
-    private String[] names = new String[]{"новый","второй","третий", "Четвертый", "Четвертый", "шестой"};
-    private Integer[] bics = new Integer[]{12312,154676,78679,3444777,5565773,234324};
+    private ArrayList<ListItemBankModel> listItemBankModels;
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -37,7 +48,14 @@ public class ActivityMain extends AppCompatActivity implements SearchView.OnQuer
         setContentView(VHMain.layout);
         vh = new VHMain(this);
         setSupportActionBar(vh.toolbar);
+        banksListRetrofitSpiceRequest = new BanksListRetrofitSpiceRequest();
         initAdapter();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        loadBanks();
     }
 
     @Override
@@ -70,16 +88,24 @@ public class ActivityMain extends AppCompatActivity implements SearchView.OnQuer
     private void search(String query){
         final List<ListItemBankModel> list;
         if (query.isEmpty()) {
-            list = mockedArray;
+            list = listItemBankModels;
         }
         else {
-            list = filter(mockedArray, query);
+            list = filter(listItemBankModels, query);
         }
         mAdapter.clear();
         addDataToRecyclerView(list);
         vh.recyclerView.scrollToPosition(0);
     }
 
+
+    private void loadBanks(){
+        getSpiceManager().execute(
+                banksListRetrofitSpiceRequest,
+                "banksListRetrofitSpiceRequest",
+                DurationInMillis.ONE_MINUTE,
+                new BanksRequestListener());
+    }
 
     private ListItemBankModel createCbrBankModel(String name, Integer bic) {
         ListItemBankModel cbrBankModel = new ListItemBankModel();
@@ -88,12 +114,14 @@ public class ActivityMain extends AppCompatActivity implements SearchView.OnQuer
         return cbrBankModel;
     }
 
-    private void createMock() {
-        mockedArray = new ArrayList<>();
-        for (int i = 0; i < names.length; i++) {
-            mockedArray.add(createCbrBankModel(names[i],bics[i]));
+    private void fillList(List<Record> list){
+        mAdapter.clear();
+        listItemBankModels = new ArrayList<>();
+        for (Record record :
+                list) {
+            listItemBankModels.add(createCbrBankModel(record.ShortName, record.Bic));
         }
-        addDataToRecyclerView(mockedArray);
+        addDataToRecyclerView(listItemBankModels);
     }
 
     private void initAdapter() {
@@ -171,17 +199,13 @@ public class ActivityMain extends AppCompatActivity implements SearchView.OnQuer
 
     void refreshItems() {
         // Load items
-        // ...
-        createMock();
-        // Load complete
-        onItemsLoadComplete();
+        loadBanks();
     }
 
 
     void onItemsLoadComplete() {
         // Update the adapter and notify data set changed
-        // ...
-
+        fillList(mCbrBankModel.recordList);
         // Stop refresh animation
         vh.swipeRefreshLayout.setRefreshing(false);
     }
@@ -204,4 +228,26 @@ public class ActivityMain extends AppCompatActivity implements SearchView.OnQuer
         return filteredModelList;
     }
 
+    // ============================================================================================
+    // INNER CLASSES
+    // ============================================================================================
+
+    public final class BanksRequestListener implements RequestListener<CbrBankModel> {
+
+
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            Toast.makeText(ActivityMain.this, "failure", Toast.LENGTH_SHORT).show();
+            // Load complete
+            onItemsLoadComplete();
+        }
+
+        @Override
+        public void onRequestSuccess(final CbrBankModel result) {
+            mCbrBankModel = result;
+            Toast.makeText(ActivityMain.this, "success", Toast.LENGTH_SHORT).show();
+            // Load complete
+            onItemsLoadComplete();
+        }
+    }
 }
