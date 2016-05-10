@@ -107,6 +107,7 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
                 BANKS_REQUEST_CACHE_KEY,
                 DurationInMillis.ALWAYS_EXPIRED,
                 new BanksRequestListener());
+        vh.progressBar.setVisibility(View.VISIBLE);
     }
 
     private void loadBanksFromCache() {
@@ -115,6 +116,7 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
                 BANKS_REQUEST_CACHE_KEY,
                 DurationInMillis.ALWAYS_RETURNED,
                 new BanksRequestListener());
+        vh.progressBar.setVisibility(View.VISIBLE);
     }
 
     private ListItemBankModel createCbrBankModel(String name, Integer bic) {
@@ -235,15 +237,17 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
 
         @Override
         public void onRequestFailure(SpiceException spiceException) {
-            Toast.makeText(ActivityMain.this, R.string.networkRequestFailure, Toast.LENGTH_SHORT).show();
             vh.swipeRefreshLayout.setRefreshing(false);
+            vh.progressBar.setVisibility(View.GONE);
+            Toast.makeText(ActivityMain.this, R.string.networkRequestFailure, Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void onRequestSuccess(final CbrBankModel result) {
+            vh.swipeRefreshLayout.setRefreshing(false);
+            vh.progressBar.setVisibility(View.GONE);
             mCbrBankModel = result;
             fillList(mCbrBankModel.recordList);
-            vh.swipeRefreshLayout.setRefreshing(false);
         }
     }
 }

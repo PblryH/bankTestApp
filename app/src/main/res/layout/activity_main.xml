@@ -46,4 +46,14 @@
 
     </RelativeLayout>
 
+    <ProgressBar
+        android:id="@+id/progressBarToolbar"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tool_bar"
+        android:indeterminate="true"
+        android:visibility="gone"
+        android:layout_marginTop="-7dp"/>
+
 </RelativeLayout>
