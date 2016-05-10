@@ -24,6 +24,6 @@ public class Record implements Serializable {
     public String ShortName;
 
     @Element(name = "Bic")
-    public Integer Bic;
+    public String Bic;
 
 }

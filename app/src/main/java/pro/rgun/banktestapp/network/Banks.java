@@ -14,6 +14,6 @@ public interface Banks {
     CbrBankModel banks();
 
     @GET("/service/api.php?json")
-    HtmlwebruBankModel bankDetail(@Query("bic") Integer bic);
+    HtmlwebruBankModel bankDetail(@Query("bic") String bic);
 
 }

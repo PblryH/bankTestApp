@@ -22,7 +22,9 @@ import java.util.List;
 
 import pro.rgun.banktestapp.R;
 import pro.rgun.banktestapp.model.CbrBankModel;
+import pro.rgun.banktestapp.model.HtmlwebruBankModel;
 import pro.rgun.banktestapp.model.Record;
+import pro.rgun.banktestapp.network.BankDetailRetrofitSpiceRequest;
 import pro.rgun.banktestapp.network.BanksListRetrofitSpiceRequest;
 import pro.rgun.banktestapp.screen.BaseSpiceActivity;
 
@@ -119,10 +121,18 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
         vh.progressBar.setVisibility(View.VISIBLE);
     }
 
-    private ListItemBankModel createCbrBankModel(String name, Integer bic) {
+    private void loadBankDetail(String bic) {
+        getSpiceManager().execute(
+                new BankDetailRetrofitSpiceRequest(bic),
+                "BankDetail" + bic,
+                DurationInMillis.ALWAYS_RETURNED,
+                new BankDetailRequestListener());
+    }
+
+    private ListItemBankModel createCbrBankModel(String name, String bic) {
         ListItemBankModel cbrBankModel = new ListItemBankModel();
         cbrBankModel.ShortName = name;
-        cbrBankModel.Bic = String.valueOf(bic);
+        cbrBankModel.Bic = bic;
         return cbrBankModel;
     }
 
@@ -152,6 +162,9 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
         mAdapter.setOnItemClickListener(new BanksListAdapter.OnItemClickListener<ListItemBankModel>() {
             @Override
             public void onItemClick(View view, final int position, ListItemBankModel object) {
+
+                loadBankDetail(object.Bic);
+
                 final BanksListAdapter.BankItemViewHolder vh = new BanksListAdapter.BankItemViewHolder(view);
 
 
@@ -248,6 +261,19 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
             vh.progressBar.setVisibility(View.GONE);
             mCbrBankModel = result;
             fillList(mCbrBankModel.recordList);
+        }
+    }
+
+    public final class BankDetailRequestListener implements RequestListener<HtmlwebruBankModel> {
+
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            Toast.makeText(ActivityMain.this, R.string.networkRequestFailure, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onRequestSuccess(final HtmlwebruBankModel result) {
+            Toast.makeText(ActivityMain.this, "Success", Toast.LENGTH_SHORT).show();
         }
     }
 }

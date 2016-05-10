@@ -12,8 +12,8 @@ public class HtmlwebruBankModel implements Serializable {
     public String name;
     public String city;
     public String adress;
-    public Integer bic;
-    public Integer ks;
+    public String bic;
+    public String ks;
     public String tel;
     public String upd;
     public Integer limit;
