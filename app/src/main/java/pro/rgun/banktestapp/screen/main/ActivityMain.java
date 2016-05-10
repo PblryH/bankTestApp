@@ -121,12 +121,19 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
         vh.progressBar.setVisibility(View.VISIBLE);
     }
 
-    private void loadBankDetail(String bic) {
+    private void loadBankDetail(final ListItemBankModel model, final int position, final BanksListAdapter.BankItemViewHolder vh) {
         getSpiceManager().execute(
-                new BankDetailRetrofitSpiceRequest(bic),
-                "BankDetail" + bic,
+                new BankDetailRetrofitSpiceRequest(model.Bic),
+                "BankDetail" + model.Bic,
                 DurationInMillis.ALWAYS_RETURNED,
-                new BankDetailRequestListener());
+                new BankDetailRequestListener(model, position, vh));
+
+        vh.retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loadBankDetail(model, position, vh);
+            }
+        });
     }
 
     private ListItemBankModel createCbrBankModel(String name, String bic) {
@@ -161,36 +168,20 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
         });
         mAdapter.setOnItemClickListener(new BanksListAdapter.OnItemClickListener<ListItemBankModel>() {
             @Override
-            public void onItemClick(View view, final int position, ListItemBankModel object) {
-
-                loadBankDetail(object.Bic);
+            public void onItemClick(View view, final int position, final ListItemBankModel object) {
 
                 final BanksListAdapter.BankItemViewHolder vh = new BanksListAdapter.BankItemViewHolder(view);
 
-
-                boolean animate = false;
-                switch (object.state) {
-                    case SHORT:
-                        object.state = ListItemBankModel.State.FULL;
-                        object.isExpanded = true;
-                        animate = true;
-                        break;
-                    case FULL:
-                        object.state = ListItemBankModel.State.IN_PROGRESS;
-                        object.isExpanded = true;
-                        break;
-                    case IN_PROGRESS:
-                        object.state = ListItemBankModel.State.REPEAT;
-                        object.isExpanded = true;
-                        break;
-                    case REPEAT:
-                        object.state = ListItemBankModel.State.SHORT;
-                        object.isExpanded = false;
-                        animate = true;
-                        break;
+                if (object.state == ListItemBankModel.State.SHORT) {
+                    object.state = ListItemBankModel.State.IN_PROGRESS;
+                    object.isExpanded = true;
+                } else {
+                    object.state = ListItemBankModel.State.SHORT;
+                    object.isExpanded = false;
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && animate) {
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN/* && animate*/) {
 
                     final Animation anim = AnimationUtils.loadAnimation(
                             ActivityMain.this, R.anim.rotate_around_center_point_to_up);
@@ -203,6 +194,9 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
 
                         @Override
                         public void onAnimationEnd(Animation animation) {
+                            if (object.state == ListItemBankModel.State.IN_PROGRESS) {
+                                loadBankDetail(object, position, vh);
+                            }
                             mAdapter.notifyItemChanged(position);
                         }
 
@@ -212,10 +206,13 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
                         }
                     });
                     vh.expandIcon.startAnimation(anim);
-                    anim.setFillAfter(true);
+                    anim.setFillAfter(!object.isExpanded || object.state != ListItemBankModel.State.IN_PROGRESS);
                     anim.start();
 
                 } else {
+                    if (object.state == ListItemBankModel.State.IN_PROGRESS) {
+                        loadBankDetail(object, position, vh);
+                    }
                     mAdapter.notifyItemChanged(position);
                 }
             }
@@ -266,14 +263,38 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
 
     public final class BankDetailRequestListener implements RequestListener<HtmlwebruBankModel> {
 
+        private ListItemBankModel model;
+        private int position;
+        private BanksListAdapter.BankItemViewHolder vh;
+
+        public BankDetailRequestListener(
+                ListItemBankModel model,
+                int position,
+                BanksListAdapter.BankItemViewHolder vh) {
+            this.model = model;
+            this.position = position;
+            this.vh = vh;
+        }
+
         @Override
         public void onRequestFailure(SpiceException spiceException) {
             Toast.makeText(ActivityMain.this, R.string.networkRequestFailure, Toast.LENGTH_SHORT).show();
+            model.state = ListItemBankModel.State.REPEAT;
+            mAdapter.notifyItemChanged(position);
         }
 
         @Override
         public void onRequestSuccess(final HtmlwebruBankModel result) {
             Toast.makeText(ActivityMain.this, "Success", Toast.LENGTH_SHORT).show();
+            vh.ks.setText(String.format(getString(R.string.listViewItemKs), result.ks));
+            vh.address.setText(String.format(
+                    getString(R.string.listViewItemAddress),
+                    result.city,
+                    result.adress));
+            vh.phone.setText(String.format(
+                    getString(R.string.listViewItemPhone), result.tel));
+            model.state = ListItemBankModel.State.FULL;
+            mAdapter.notifyItemChanged(position);
         }
     }
 }

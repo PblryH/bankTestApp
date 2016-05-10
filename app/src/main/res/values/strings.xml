@@ -2,6 +2,9 @@
     <string name="appName">BankTestApp</string>
     <string name="empty">empty</string>
     <string name="listViewItemBic">БИК: %s</string>
+    <string name="listViewItemKs">КОР. СЧЕТ: %s</string>
+    <string name="listViewItemAddress">Адрес: %1$s, %2$s</string>
+    <string name="listViewItemPhone">Тел.: %s</string>
     <string name="loading">ЗАГРУЗКА...</string>
     <string name="loadingError">Ошибка при загрузке</string>
     <string name="retry">ПОВТОРИТЬ</string>
