@@ -29,6 +29,8 @@ import pro.rgun.banktestapp.screen.BaseSpiceActivity;
 public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQueryTextListener {
 
 
+    public static final String BANKS_REQUEST_CACHE_KEY = "banksListRetrofitSpiceRequest";
+
     private CbrBankModel mCbrBankModel;
     private BanksListRetrofitSpiceRequest banksListRetrofitSpiceRequest;
     private VHMain vh;
@@ -55,7 +57,7 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
     @Override
     protected void onStart() {
         super.onStart();
-        loadBanks();
+        loadBanksFromCache();
     }
 
     @Override
@@ -64,7 +66,7 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
         inflater.inflate(R.menu.menu_main, menu);
         mActionMenuItem = menu.findItem(R.id.action_search);
         mSearchView = (SearchView) mActionMenuItem.getActionView();
-        mSearchView.setQueryHint(getString(R.string.search_hint));
+        mSearchView.setQueryHint(getString(R.string.searchHint));
         mSearchView.setOnQueryTextListener(this);
         return true;
     }
@@ -81,29 +83,37 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
 
     @Override
     public boolean onQueryTextChange(String newText) {
-            search(newText);
+        search(newText);
         return false;
     }
 
-    private void search(String query){
+    private void search(String query) {
         final List<ListItemBankModel> list;
         if (query.isEmpty()) {
             list = listItemBankModels;
-        }
-        else {
+        } else {
             list = filter(listItemBankModels, query);
         }
         mAdapter.clear();
-        addDataToRecyclerView(list);
-        vh.recyclerView.scrollToPosition(0);
+        if (list != null && !list.isEmpty()) {
+            addDataToRecyclerView(list);
+            vh.recyclerView.scrollToPosition(0);
+        }
     }
 
-
-    private void loadBanks(){
+    private void loadBanksFromNetwork() {
         getSpiceManager().execute(
                 banksListRetrofitSpiceRequest,
-                "banksListRetrofitSpiceRequest",
-                DurationInMillis.ONE_MINUTE,
+                BANKS_REQUEST_CACHE_KEY,
+                DurationInMillis.ALWAYS_EXPIRED,
+                new BanksRequestListener());
+    }
+
+    private void loadBanksFromCache() {
+        getSpiceManager().execute(
+                banksListRetrofitSpiceRequest,
+                BANKS_REQUEST_CACHE_KEY,
+                DurationInMillis.ALWAYS_RETURNED,
                 new BanksRequestListener());
     }
 
@@ -114,7 +124,7 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
         return cbrBankModel;
     }
 
-    private void fillList(List<Record> list){
+    private void fillList(List<Record> list) {
         mAdapter.clear();
         listItemBankModels = new ArrayList<>();
         for (Record record :
@@ -134,7 +144,7 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
             @Override
             public void onRefresh() {
                 // Refresh items
-                refreshItems();
+                loadBanksFromNetwork();
             }
         });
         mAdapter.setOnItemClickListener(new BanksListAdapter.OnItemClickListener<ListItemBankModel>() {
@@ -197,19 +207,6 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
         });
     }
 
-    void refreshItems() {
-        // Load items
-        loadBanks();
-    }
-
-
-    void onItemsLoadComplete() {
-        // Update the adapter and notify data set changed
-        fillList(mCbrBankModel.recordList);
-        // Stop refresh animation
-        vh.swipeRefreshLayout.setRefreshing(false);
-    }
-
     public void addDataToRecyclerView(List<ListItemBankModel> data) {
         mAdapter.addAll(data);
     }
@@ -218,11 +215,13 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
     private List<ListItemBankModel> filter(List<ListItemBankModel> models, String query) {
         query = query.toLowerCase();
         final List<ListItemBankModel> filteredModelList = new ArrayList<>();
-        for (ListItemBankModel model : models) {
-            final String name = model.ShortName.toLowerCase();
-            final String bic = model.Bic;
-            if (name.contains(query) || bic.contains(query)) {
-                filteredModelList.add(model);
+        if (models != null) {
+            for (ListItemBankModel model : models) {
+                final String name = model.ShortName.toLowerCase();
+                final String bic = model.Bic;
+                if (name.contains(query) || bic.contains(query)) {
+                    filteredModelList.add(model);
+                }
             }
         }
         return filteredModelList;
@@ -234,20 +233,17 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
 
     public final class BanksRequestListener implements RequestListener<CbrBankModel> {
 
-
         @Override
         public void onRequestFailure(SpiceException spiceException) {
-            Toast.makeText(ActivityMain.this, "failure", Toast.LENGTH_SHORT).show();
-            // Load complete
-            onItemsLoadComplete();
+            Toast.makeText(ActivityMain.this, R.string.networkRequestFailure, Toast.LENGTH_SHORT).show();
+            vh.swipeRefreshLayout.setRefreshing(false);
         }
 
         @Override
         public void onRequestSuccess(final CbrBankModel result) {
             mCbrBankModel = result;
-            Toast.makeText(ActivityMain.this, "success", Toast.LENGTH_SHORT).show();
-            // Load complete
-            onItemsLoadComplete();
+            fillList(mCbrBankModel.recordList);
+            vh.swipeRefreshLayout.setRefreshing(false);
         }
     }
 }

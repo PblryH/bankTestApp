@@ -40,7 +40,7 @@ public class BanksListAdapter
         ListItemBankModel model = getItem(position);
         vh.name.setText(model.ShortName);
         Application application = (Application) Application.context;
-        vh.bic.setText(String.format(application.getString(R.string.list_view_item_bic), model.Bic));
+        vh.bic.setText(String.format(application.getString(R.string.listViewItemBic), model.Bic));
         if(model.isExpanded) {
             vh.expandIcon.setImageDrawable(
                     application.getResources()
