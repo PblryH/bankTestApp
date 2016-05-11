@@ -121,25 +121,18 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
         vh.progressBar.setVisibility(View.VISIBLE);
     }
 
-    private void loadBankDetail(final ListItemBankModel model, final int position, final BanksListAdapter.BankItemViewHolder vh) {
+    private void loadBankDetail(ListItemBankModel model, int position) {
         getSpiceManager().execute(
-                new BankDetailRetrofitSpiceRequest(model.Bic),
-                "BankDetail" + model.Bic,
+                new BankDetailRetrofitSpiceRequest(model.bic),
+                "BankDetail" + model.bic,
                 DurationInMillis.ALWAYS_RETURNED,
-                new BankDetailRequestListener(model, position, vh));
-
-        vh.retryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadBankDetail(model, position, vh);
-            }
-        });
+                new BankDetailRequestListener(model, position));
     }
 
     private ListItemBankModel createCbrBankModel(String name, String bic) {
         ListItemBankModel cbrBankModel = new ListItemBankModel();
-        cbrBankModel.ShortName = name;
-        cbrBankModel.Bic = bic;
+        cbrBankModel.shortName = name;
+        cbrBankModel.bic = bic;
         return cbrBankModel;
     }
 
@@ -166,11 +159,12 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
                 loadBanksFromNetwork();
             }
         });
-        mAdapter.setOnItemClickListener(new BanksListAdapter.OnItemClickListener<ListItemBankModel>() {
+        mAdapter.setOnItemClickListener(new BanksListAdapter.OnClickListener<ListItemBankModel>() {
             @Override
-            public void onItemClick(View view, final int position, final ListItemBankModel object) {
-
-                final BanksListAdapter.BankItemViewHolder vh = new BanksListAdapter.BankItemViewHolder(view);
+            public void onItemClick(
+                    final BanksListAdapter.BankItemViewHolder vh,
+                    final int position,
+                    final ListItemBankModel object) {
 
                 if (object.state == ListItemBankModel.State.SHORT) {
                     object.state = ListItemBankModel.State.IN_PROGRESS;
@@ -195,7 +189,7 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
                         @Override
                         public void onAnimationEnd(Animation animation) {
                             if (object.state == ListItemBankModel.State.IN_PROGRESS) {
-                                loadBankDetail(object, position, vh);
+                                loadBankDetail(object, position);
                             }
                             mAdapter.notifyItemChanged(position);
                         }
@@ -206,15 +200,25 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
                         }
                     });
                     vh.expandIcon.startAnimation(anim);
-                    anim.setFillAfter(!object.isExpanded || object.state != ListItemBankModel.State.IN_PROGRESS);
+                    anim.setFillAfter(!object.isExpanded
+                            || object.state != ListItemBankModel.State.IN_PROGRESS);
                     anim.start();
 
                 } else {
                     if (object.state == ListItemBankModel.State.IN_PROGRESS) {
-                        loadBankDetail(object, position, vh);
+                        loadBankDetail(object, position);
                     }
                     mAdapter.notifyItemChanged(position);
                 }
+            }
+        });
+        mAdapter.setOnRetryBtnClickListener(new BanksListAdapter.OnClickListener<ListItemBankModel>() {
+            @Override
+            public void onItemClick(
+                    BanksListAdapter.BankItemViewHolder vh,
+                    int position,
+                    ListItemBankModel object) {
+                loadBankDetail(object, position);
             }
         });
     }
@@ -229,8 +233,8 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
         final List<ListItemBankModel> filteredModelList = new ArrayList<>();
         if (models != null) {
             for (ListItemBankModel model : models) {
-                final String name = model.ShortName.toLowerCase();
-                final String bic = model.Bic;
+                final String name = model.shortName.toLowerCase();
+                final String bic = model.bic;
                 if (name.contains(query) || bic.contains(query)) {
                     filteredModelList.add(model);
                 }
@@ -265,15 +269,10 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
 
         private ListItemBankModel model;
         private int position;
-        private BanksListAdapter.BankItemViewHolder vh;
 
-        public BankDetailRequestListener(
-                ListItemBankModel model,
-                int position,
-                BanksListAdapter.BankItemViewHolder vh) {
+        public BankDetailRequestListener(ListItemBankModel model, int position) {
             this.model = model;
             this.position = position;
-            this.vh = vh;
         }
 
         @Override
@@ -285,14 +284,10 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
 
         @Override
         public void onRequestSuccess(final HtmlwebruBankModel result) {
-            Toast.makeText(ActivityMain.this, "Success", Toast.LENGTH_SHORT).show();
-            vh.ks.setText(String.format(getString(R.string.listViewItemKs), result.ks));
-            vh.address.setText(String.format(
-                    getString(R.string.listViewItemAddress),
-                    result.city,
-                    result.adress));
-            vh.phone.setText(String.format(
-                    getString(R.string.listViewItemPhone), result.tel));
+            model.ks = result.ks;
+            model.city = result.city;
+            model.address = result.adress;
+            model.tel = result.tel;
             model.state = ListItemBankModel.State.FULL;
             mAdapter.notifyItemChanged(position);
         }

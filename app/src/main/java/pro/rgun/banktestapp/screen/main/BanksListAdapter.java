@@ -19,29 +19,39 @@ import pro.rgun.banktestapp.screen.ListAdapter;
  * Created by rgun on 03.12.15.
  */
 public class BanksListAdapter
-        extends ListAdapter<ListItemBankModel, BanksListAdapter.BankItemViewHolderForRecyclerView> {
+        extends ListAdapter<ListItemBankModel, BanksListAdapter.BankItemViewHolder> {
 
-    private OnItemClickListener listener;
+    private OnClickListener
+            listener,
+            retryBtnClickListener;
 
     public BanksListAdapter() {
         super(new ArrayList<ListItemBankModel>());
     }
 
     @Override
-    protected BankItemViewHolderForRecyclerView createNormalViewHolder(ViewGroup parent, int viewType) {
+    protected BankItemViewHolder createNormalViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater
                 .from(parent.getContext())
                 .inflate(BankItemViewHolder.layout, parent, false);
-        return new BankItemViewHolderForRecyclerView(this, v);
+        return new BankItemViewHolder(this, v);
     }
 
     @Override
-    protected void bindNormalViewHolder(final BankItemViewHolderForRecyclerView vh, int position) {
-        ListItemBankModel model = getItem(position);
-        vh.name.setText(model.ShortName);
+    protected void bindNormalViewHolder(final BankItemViewHolder vh, final int position) {
+        final ListItemBankModel model = getItem(position);
+        vh.name.setText(model.shortName);
         Application application = (Application) Application.context;
-        vh.bic.setText(String.format(application.getString(R.string.listViewItemBic), model.Bic));
-        if(model.isExpanded) {
+        vh.bic.setText(String.format(application.getString(R.string.listViewItemBic), model.bic));
+        vh.ks.setText(String.format(application.getString(R.string.listViewItemKs), model.ks));
+        vh.address.setText(String.format(
+                application.getString(R.string.listViewItemAddress),
+                model.city,
+                model.address));
+        vh.phone.setText(String.format(
+                application.getString(R.string.listViewItemPhone), model.tel));
+
+        if (model.isExpanded) {
             vh.expandIcon.setImageDrawable(
                     application.getResources()
                             .getDrawable(R.drawable.ic_keyboard_arrow_up_24dp));
@@ -82,67 +92,46 @@ public class BanksListAdapter
                 break;
         }
 
+        vh.retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (retryBtnClickListener != null) {
+                    retryBtnClickListener.onItemClick(vh, position, model);
+                }
+            }
+        });
+
     }
 
     public ListItemBankModel getItem(int position) {
         return getItemAt(position);
     }
 
-    public void setOnItemClickListener(OnItemClickListener listener) {
+    public void setOnItemClickListener(OnClickListener listener) {
         this.listener = listener;
+    }
+
+    public void setOnRetryBtnClickListener(OnClickListener retryBtnClickListener) {
+        this.retryBtnClickListener = retryBtnClickListener;
     }
 
     // ============================================================================================
     // INTERFACE
     // ============================================================================================
 
-    public interface OnItemClickListener<T> {
-        void onItemClick(View view, int position, T object);
+    public interface OnClickListener<T> {
+        void onItemClick(BankItemViewHolder vh, int position, T object);
     }
+
 
     // ============================================================================================
     // PUBLIC INNER CLASSES
     // ============================================================================================
 
-    public static class BankItemViewHolderForRecyclerView
+    public static class BankItemViewHolder
             extends RecyclerView.ViewHolder
             implements View.OnClickListener {
 
-        private ImageView expandIcon;
-        private TextView name, bic, ks, address, phone;
-        private View retryBlock, loadingBlock;
-        private Button retryButton;
-        private BanksListAdapter mMessageListAdapter;
-
-        public BankItemViewHolderForRecyclerView(BanksListAdapter messageListAdapter, View itemView) {
-            super(itemView);
-            mMessageListAdapter = messageListAdapter;
-
-            BankItemViewHolder vh = new BankItemViewHolder(itemView);
-            expandIcon = vh.expandIcon;
-            name = vh.name;
-            bic = vh.bic;
-            ks = vh.ks;
-            address = vh.address;
-            phone = vh.phone;
-            retryBlock = vh.retryBlock;
-            loadingBlock = vh.loadingBlock;
-            retryButton = vh.retryButton;
-            itemView.setOnClickListener(this);
-
-        }
-
-        @Override
-        public void onClick(View v) {
-            if (mMessageListAdapter.listener != null) {
-                itemView.setBackgroundResource(R.drawable.white_touch);
-                mMessageListAdapter.listener.onItemClick(
-                        v, getLayoutPosition(), mMessageListAdapter.getItem(getLayoutPosition()));
-            }
-        }
-    }
-
-    public static class BankItemViewHolder {
 
         public static final int layout = R.layout.list_view_item;
 
@@ -150,8 +139,11 @@ public class BanksListAdapter
         public TextView name, bic, ks, address, phone;
         public View retryBlock, loadingBlock;
         public Button retryButton;
+        private BanksListAdapter mMessageListAdapter;
 
-        public BankItemViewHolder(View itemView) {
+        public BankItemViewHolder(BanksListAdapter messageListAdapter, View itemView) {
+            super(itemView);
+            mMessageListAdapter = messageListAdapter;
             expandIcon = (ImageView) itemView.findViewById(R.id.expandIcon);
             name = (TextView) itemView.findViewById(R.id.name);
             bic = (TextView) itemView.findViewById(R.id.bic);
@@ -161,6 +153,17 @@ public class BanksListAdapter
             loadingBlock = itemView.findViewById(R.id.loadingBlock);
             retryBlock = itemView.findViewById(R.id.retryBlock);
             retryButton = (Button) itemView.findViewById(R.id.retryButton);
+            itemView.setOnClickListener(this);
+
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (mMessageListAdapter.listener != null) {
+                itemView.setBackgroundResource(R.drawable.white_touch);
+                mMessageListAdapter.listener.onItemClick(
+                        this, getLayoutPosition(), mMessageListAdapter.getItem(getLayoutPosition()));
+            }
         }
     }
 

@@ -9,8 +9,12 @@ public class ListItemBankModel implements Serializable{
 
     private static final long serialVersionUID = -8006070426484949986L;
 
-    public String ShortName;
-    public String Bic;
+    public String shortName;
+    public String bic;
+    public String ks;
+    public String city;
+    public String address;
+    public String tel;
 
     public boolean isExpanded = false;
 
