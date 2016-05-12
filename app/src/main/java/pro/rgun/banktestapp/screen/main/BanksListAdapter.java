@@ -17,6 +17,8 @@ import pro.rgun.banktestapp.screen.ListAdapter;
 
 /**
  * Created by rgun on 03.12.15.
+ *
+ * <p>Адаптер списка банков</p>
  */
 public class BanksListAdapter
         extends ListAdapter<ListItemBankModel, BanksListAdapter.BankItemViewHolder> {
@@ -25,6 +27,9 @@ public class BanksListAdapter
             listener,
             retryBtnClickListener;
 
+    /**
+     * Инициализация адаптера
+     */
     public BanksListAdapter() {
         super(new ArrayList<ListItemBankModel>());
     }
@@ -103,14 +108,27 @@ public class BanksListAdapter
 
     }
 
+    /**
+     * Получение {@link ListItemBankModel} по позиции
+     * @param position Позиция элемента
+     * @return {@link ListItemBankModel}
+     */
     public ListItemBankModel getItem(int position) {
         return getItemAt(position);
     }
 
+    /**
+     * Установка листнера на нажатие на элемент списка
+     * @param listener {@link OnClickListener}
+     */
     public void setOnItemClickListener(OnClickListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Установка листнера на нажатие на кнопку Retry элемента списка
+     * @param retryBtnClickListener {@link OnClickListener}
+     */
     public void setOnRetryBtnClickListener(OnClickListener retryBtnClickListener) {
         this.retryBtnClickListener = retryBtnClickListener;
     }
@@ -119,6 +137,10 @@ public class BanksListAdapter
     // INTERFACE
     // ============================================================================================
 
+    /**
+     * Интерфейс для отслеживания нажатия на элементе списка
+     * @param <T> возвращаемый объект данных
+     */
     public interface OnClickListener<T> {
         void onItemClick(BankItemViewHolder vh, int position, T object);
     }
@@ -128,6 +150,9 @@ public class BanksListAdapter
     // PUBLIC INNER CLASSES
     // ============================================================================================
 
+    /**
+     * Вью холдер эелемента списка
+     */
     public static class BankItemViewHolder
             extends RecyclerView.ViewHolder
             implements View.OnClickListener {

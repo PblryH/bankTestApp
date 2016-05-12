@@ -7,6 +7,8 @@ import android.view.View;
 
 /**
  * Created by rgun on 25.02.16.
+ *
+ * <p>RecyclerView с поддержкой пустого списка</p>
  */
 public class RecyclerViewEmptySupport extends RecyclerView {
 
@@ -55,6 +57,11 @@ public class RecyclerViewEmptySupport extends RecyclerView {
         emptyObserver.onChanged();
     }
 
+    /**
+     * Установка вида для пустого списка
+     *
+     * @param emptyView вид для пустого списка
+     */
     public void setEmptyView(View emptyView) {
         this.emptyView = emptyView;
     }

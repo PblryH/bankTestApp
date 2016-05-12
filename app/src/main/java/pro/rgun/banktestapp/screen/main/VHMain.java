@@ -11,6 +11,8 @@ import pro.rgun.banktestapp.screen.RecyclerViewEmptySupport;
 
 /**
  * Created by rgun on 25.04.16.
+ *
+ * <p>ViewHolder activity_main</p>
  */
 public class VHMain {
 

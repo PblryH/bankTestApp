@@ -4,6 +4,8 @@ import com.octo.android.robospice.retrofit.RetrofitGsonSpiceService;
 
 /**
  * Created by rgun on 09.05.16.
+ *
+ * <p>Реализация {@link RetrofitSpiceService}</p>
  */
 public class RetrofitSpiceService extends RetrofitGsonSpiceService {
 

@@ -8,6 +8,8 @@ import retrofit.converter.SimpleXMLConverter;
 
 /**
  * Created by rgun on 09.05.16.
+ *
+ * <p>Запрос на получение списка банков</p>
  */
 public class BanksListRetrofitSpiceRequest extends RetrofitSpiceRequest<CbrBankModel, Banks> {
 

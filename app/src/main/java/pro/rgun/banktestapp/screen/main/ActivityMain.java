@@ -103,47 +103,19 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
         }
     }
 
-    private void loadBanksFromNetwork() {
-        getSpiceManager().execute(
-                banksListRetrofitSpiceRequest,
-                BANKS_REQUEST_CACHE_KEY,
-                DurationInMillis.ALWAYS_EXPIRED,
-                new BanksRequestListener());
-        vh.progressBar.setVisibility(View.VISIBLE);
-    }
-
-    private void loadBanksFromCache() {
-        getSpiceManager().execute(
-                banksListRetrofitSpiceRequest,
-                BANKS_REQUEST_CACHE_KEY,
-                DurationInMillis.ALWAYS_RETURNED,
-                new BanksRequestListener());
-        vh.progressBar.setVisibility(View.VISIBLE);
-    }
-
-    private void loadBankDetail(ListItemBankModel model, int position) {
-        getSpiceManager().execute(
-                new BankDetailRetrofitSpiceRequest(model.bic),
-                "BankDetail" + model.bic,
-                DurationInMillis.ALWAYS_RETURNED,
-                new BankDetailRequestListener(model, position));
-    }
-
-    private ListItemBankModel createCbrBankModel(String name, String bic) {
-        ListItemBankModel cbrBankModel = new ListItemBankModel();
-        cbrBankModel.shortName = name;
-        cbrBankModel.bic = bic;
-        return cbrBankModel;
-    }
-
-    private void fillList(List<Record> list) {
-        mAdapter.clear();
-        listItemBankModels = new ArrayList<>();
-        for (Record record :
-                list) {
-            listItemBankModels.add(createCbrBankModel(record.ShortName, record.Bic));
+    private List<ListItemBankModel> filter(List<ListItemBankModel> models, String query) {
+        query = query.toLowerCase();
+        final List<ListItemBankModel> filteredModelList = new ArrayList<>();
+        if (models != null) {
+            for (ListItemBankModel model : models) {
+                final String name = model.shortName.toLowerCase();
+                final String bic = model.bic;
+                if (name.contains(query) || bic.contains(query)) {
+                    filteredModelList.add(model);
+                }
+            }
         }
-        addDataToRecyclerView(listItemBankModels);
+        return filteredModelList;
     }
 
     private void initAdapter() {
@@ -223,30 +195,60 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
         });
     }
 
-    public void addDataToRecyclerView(List<ListItemBankModel> data) {
+    private void addDataToRecyclerView(List<ListItemBankModel> data) {
         mAdapter.addAll(data);
     }
 
+    private void loadBanksFromNetwork() {
+        getSpiceManager().execute(
+                banksListRetrofitSpiceRequest,
+                BANKS_REQUEST_CACHE_KEY,
+                DurationInMillis.ALWAYS_EXPIRED,
+                new BanksRequestListener());
+        vh.progressBar.setVisibility(View.VISIBLE);
+    }
 
-    private List<ListItemBankModel> filter(List<ListItemBankModel> models, String query) {
-        query = query.toLowerCase();
-        final List<ListItemBankModel> filteredModelList = new ArrayList<>();
-        if (models != null) {
-            for (ListItemBankModel model : models) {
-                final String name = model.shortName.toLowerCase();
-                final String bic = model.bic;
-                if (name.contains(query) || bic.contains(query)) {
-                    filteredModelList.add(model);
-                }
-            }
+    private void loadBanksFromCache() {
+        getSpiceManager().execute(
+                banksListRetrofitSpiceRequest,
+                BANKS_REQUEST_CACHE_KEY,
+                DurationInMillis.ALWAYS_RETURNED,
+                new BanksRequestListener());
+        vh.progressBar.setVisibility(View.VISIBLE);
+    }
+
+    private void loadBankDetail(ListItemBankModel model, int position) {
+        getSpiceManager().execute(
+                new BankDetailRetrofitSpiceRequest(model.bic),
+                "BankDetail" + model.bic,
+                DurationInMillis.ALWAYS_RETURNED,
+                new BankDetailRequestListener(model, position));
+    }
+
+    private ListItemBankModel createCbrBankModel(String name, String bic) {
+        ListItemBankModel cbrBankModel = new ListItemBankModel();
+        cbrBankModel.shortName = name;
+        cbrBankModel.bic = bic;
+        return cbrBankModel;
+    }
+
+    private void fillList(List<Record> list) {
+        mAdapter.clear();
+        listItemBankModels = new ArrayList<>();
+        for (Record record :
+                list) {
+            listItemBankModels.add(createCbrBankModel(record.ShortName, record.Bic));
         }
-        return filteredModelList;
+        addDataToRecyclerView(listItemBankModels);
     }
 
     // ============================================================================================
     // INNER CLASSES
     // ============================================================================================
 
+    /**
+     * Листнер запроса получения списка банков
+     */
     public final class BanksRequestListener implements RequestListener<CbrBankModel> {
 
         @Override
@@ -265,11 +267,19 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
         }
     }
 
+    /**
+     * Листнер запроса получения детальной информации по банку
+     */
     public final class BankDetailRequestListener implements RequestListener<HtmlwebruBankModel> {
 
         private ListItemBankModel model;
         private int position;
 
+        /**
+         * Конструктор
+         * @param model модель {@link ListItemBankModel} элемента списка по позиции
+         * @param position Позиция
+         */
         public BankDetailRequestListener(ListItemBankModel model, int position) {
             this.model = model;
             this.position = position;
@@ -284,10 +294,7 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
 
         @Override
         public void onRequestSuccess(final HtmlwebruBankModel result) {
-            model.ks = result.ks;
-            model.city = result.city;
-            model.address = result.adress;
-            model.tel = result.tel;
+            model.fillFromHtmlwebruBankModel(result);
             model.state = ListItemBankModel.State.FULL;
             mAdapter.notifyItemChanged(position);
         }

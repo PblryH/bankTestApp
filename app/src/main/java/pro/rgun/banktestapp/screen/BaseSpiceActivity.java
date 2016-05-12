@@ -13,6 +13,9 @@ public class BaseSpiceActivity extends AppCompatActivity {
 
     private SpiceManager spiceManager = new SpiceManager(RetrofitSpiceService.class);
 
+    ///////////////////////////////////////////////////////////////////////////
+    // Activity lifecycle
+    ///////////////////////////////////////////////////////////////////////////
     @Override
     protected void onStart() {
         spiceManager.start(this);
@@ -25,6 +28,10 @@ public class BaseSpiceActivity extends AppCompatActivity {
         super.onStop();
     }
 
+    /**
+     * Получение {@link SpiceManager}
+     * @return {@link SpiceManager}
+     */
     protected SpiceManager getSpiceManager() {
         return spiceManager;
     }
