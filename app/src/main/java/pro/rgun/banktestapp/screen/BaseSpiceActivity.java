@@ -32,7 +32,7 @@ public class BaseSpiceActivity extends AppCompatActivity {
      * Получение {@link SpiceManager}
      * @return {@link SpiceManager}
      */
-    protected SpiceManager getSpiceManager() {
+    public SpiceManager getSpiceManager() {
         return spiceManager;
     }
 }

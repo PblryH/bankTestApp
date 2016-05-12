@@ -1,46 +1,37 @@
 package pro.rgun.banktestapp.screen.main;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.SearchView;
 import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
-import com.octo.android.robospice.persistence.DurationInMillis;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import pro.rgun.banktestapp.R;
 import pro.rgun.banktestapp.model.CbrBankModel;
 import pro.rgun.banktestapp.model.HtmlwebruBankModel;
-import pro.rgun.banktestapp.model.Record;
-import pro.rgun.banktestapp.network.BankDetailRetrofitSpiceRequest;
-import pro.rgun.banktestapp.network.BanksListRetrofitSpiceRequest;
 import pro.rgun.banktestapp.screen.BaseSpiceActivity;
+import pro.rgun.banktestapp.screen.main.model.ModelMain;
+import pro.rgun.banktestapp.screen.main.model.ModelMainImpl;
+import pro.rgun.banktestapp.screen.main.view.ListItemBankModel;
+import pro.rgun.banktestapp.screen.main.view.ViewMain;
+import pro.rgun.banktestapp.screen.main.view.ViewMainImpl;
+import pro.rgun.banktestapp.screen.main.view.ViewMainMenu;
+import pro.rgun.banktestapp.screen.main.view.ViewMainMenuImpl;
 
-public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQueryTextListener {
+public class ActivityMain
+        extends BaseSpiceActivity
+        implements
+        ViewMain.Listener,
+        ViewMainMenu.Listener,
+        SwipeRefreshLayout.OnRefreshListener {
 
-
-    public static final String BANKS_REQUEST_CACHE_KEY = "banksListRetrofitSpiceRequest";
-
-    private CbrBankModel mCbrBankModel;
-    private BanksListRetrofitSpiceRequest banksListRetrofitSpiceRequest;
-    private VHMain vh;
-    private LinearLayoutManager mLayoutManager;
-    private BanksListAdapter mAdapter;
-    private MenuItem mActionMenuItem;
-    private SearchView mSearchView;
-    private ArrayList<ListItemBankModel> listItemBankModels;
+    private ViewMain viewMain;
+    private ViewMainMenu viewMainMenu;
+    private ModelMain modelMain;
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -49,11 +40,10 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(VHMain.layout);
-        vh = new VHMain(this);
-        setSupportActionBar(vh.toolbar);
-        banksListRetrofitSpiceRequest = new BanksListRetrofitSpiceRequest();
-        initAdapter();
+        viewMain = new ViewMainImpl(this);
+        viewMain.setListener(this);
+        viewMain.setPullToRefreshListener(this);
+        modelMain = new ModelMainImpl(this);
     }
 
     @Override
@@ -64,183 +54,55 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_main, menu);
-        mActionMenuItem = menu.findItem(R.id.action_search);
-        mSearchView = (SearchView) mActionMenuItem.getActionView();
-        mSearchView.setQueryHint(getString(R.string.searchHint));
-        mSearchView.setOnQueryTextListener(this);
+        viewMainMenu = new ViewMainMenuImpl(this, menu);
+        viewMainMenu.setListener(this);
         return true;
     }
 
+    private void loadBanksFromCache(){
+        modelMain.loadBanksFromCache(new BanksRequestListener());
+        viewMain.showProgress();
+    }
 
     ///////////////////////////////////////////////////////////////////////////
-    // SearchView.OnQueryTextListener impl
+    // ViewMain.Listener impl
     ///////////////////////////////////////////////////////////////////////////
 
     @Override
-    public boolean onQueryTextSubmit(String query) {
-        return false;
+    public void onItemClick(ListItemBankModel model, int position) {
+        modelMain.loadBankDetail(model.bic, new BankDetailRequestListener(model,position));
     }
 
     @Override
-    public boolean onQueryTextChange(String newText) {
-        search(newText);
-        return false;
+    public void onRetryClick(ListItemBankModel model, int position) {
+        modelMain.loadBankDetail(model.bic, new BankDetailRequestListener(model,position));
     }
 
-    private void search(String query) {
-        final List<ListItemBankModel> list;
-        if (query.isEmpty()) {
-            list = listItemBankModels;
-        } else {
-            list = filter(listItemBankModels, query);
-        }
-        mAdapter.clear();
-        if (list != null && !list.isEmpty()) {
-            addDataToRecyclerView(list);
-            vh.recyclerView.scrollToPosition(0);
-        }
+    ///////////////////////////////////////////////////////////////////////////
+    // SwipeRefreshLayout.OnRefreshListener impl
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public void onRefresh() {
+        modelMain.loadBanksFromNetwork(new BanksRequestListener());
+        viewMain.showProgress();
     }
 
-    private List<ListItemBankModel> filter(List<ListItemBankModel> models, String query) {
-        query = query.toLowerCase();
-        final List<ListItemBankModel> filteredModelList = new ArrayList<>();
-        if (models != null) {
-            for (ListItemBankModel model : models) {
-                final String name = model.shortName.toLowerCase();
-                final String bic = model.bic;
-                if (name.contains(query) || bic.contains(query)) {
-                    filteredModelList.add(model);
-                }
-            }
-        }
-        return filteredModelList;
+    ///////////////////////////////////////////////////////////////////////////
+    // ViewMainMenu.Listener impl
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public void onNeedClearList() {
+        viewMain.clearList();
     }
 
-    private void initAdapter() {
-        vh.recyclerView.setEmptyView(vh.empty);
-        mLayoutManager = new LinearLayoutManager(this);
-        vh.recyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new BanksListAdapter();
-        vh.recyclerView.setAdapter(mAdapter);
-        vh.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                // Refresh items
-                loadBanksFromNetwork();
-            }
-        });
-        mAdapter.setOnItemClickListener(new BanksListAdapter.OnClickListener<ListItemBankModel>() {
-            @Override
-            public void onItemClick(
-                    final BanksListAdapter.BankItemViewHolder vh,
-                    final int position,
-                    final ListItemBankModel object) {
-
-                if (object.state == ListItemBankModel.State.SHORT) {
-                    object.state = ListItemBankModel.State.IN_PROGRESS;
-                    object.isExpanded = true;
-                } else {
-                    object.state = ListItemBankModel.State.SHORT;
-                    object.isExpanded = false;
-                }
-
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN/* && animate*/) {
-
-                    final Animation anim = AnimationUtils.loadAnimation(
-                            ActivityMain.this, R.anim.rotate_around_center_point_to_up);
-
-                    anim.setAnimationListener(new Animation.AnimationListener() {
-                        @Override
-                        public void onAnimationStart(Animation animation) {
-
-                        }
-
-                        @Override
-                        public void onAnimationEnd(Animation animation) {
-                            if (object.state == ListItemBankModel.State.IN_PROGRESS) {
-                                loadBankDetail(object, position);
-                            }
-                            mAdapter.notifyItemChanged(position);
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animation animation) {
-
-                        }
-                    });
-                    vh.expandIcon.startAnimation(anim);
-                    anim.setFillAfter(!object.isExpanded
-                            || object.state != ListItemBankModel.State.IN_PROGRESS);
-                    anim.start();
-
-                } else {
-                    if (object.state == ListItemBankModel.State.IN_PROGRESS) {
-                        loadBankDetail(object, position);
-                    }
-                    mAdapter.notifyItemChanged(position);
-                }
-            }
-        });
-        mAdapter.setOnRetryBtnClickListener(new BanksListAdapter.OnClickListener<ListItemBankModel>() {
-            @Override
-            public void onItemClick(
-                    BanksListAdapter.BankItemViewHolder vh,
-                    int position,
-                    ListItemBankModel object) {
-                loadBankDetail(object, position);
-            }
-        });
+    @Override
+    public void onNeedAddNewDataToList(List<ListItemBankModel> list) {
+        viewMain.addDataToRecyclerView(list);
+        viewMain.scrollToPosition(0);
     }
 
-    private void addDataToRecyclerView(List<ListItemBankModel> data) {
-        mAdapter.addAll(data);
-    }
-
-    private void loadBanksFromNetwork() {
-        getSpiceManager().execute(
-                banksListRetrofitSpiceRequest,
-                BANKS_REQUEST_CACHE_KEY,
-                DurationInMillis.ALWAYS_EXPIRED,
-                new BanksRequestListener());
-        vh.progressBar.setVisibility(View.VISIBLE);
-    }
-
-    private void loadBanksFromCache() {
-        getSpiceManager().execute(
-                banksListRetrofitSpiceRequest,
-                BANKS_REQUEST_CACHE_KEY,
-                DurationInMillis.ALWAYS_RETURNED,
-                new BanksRequestListener());
-        vh.progressBar.setVisibility(View.VISIBLE);
-    }
-
-    private void loadBankDetail(ListItemBankModel model, int position) {
-        getSpiceManager().execute(
-                new BankDetailRetrofitSpiceRequest(model.bic),
-                "BankDetail" + model.bic,
-                DurationInMillis.ALWAYS_RETURNED,
-                new BankDetailRequestListener(model, position));
-    }
-
-    private ListItemBankModel createCbrBankModel(String name, String bic) {
-        ListItemBankModel cbrBankModel = new ListItemBankModel();
-        cbrBankModel.shortName = name;
-        cbrBankModel.bic = bic;
-        return cbrBankModel;
-    }
-
-    private void fillList(List<Record> list) {
-        mAdapter.clear();
-        listItemBankModels = new ArrayList<>();
-        for (Record record :
-                list) {
-            listItemBankModels.add(createCbrBankModel(record.ShortName, record.Bic));
-        }
-        addDataToRecyclerView(listItemBankModels);
-    }
 
     // ============================================================================================
     // INNER CLASSES
@@ -253,17 +115,17 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
 
         @Override
         public void onRequestFailure(SpiceException spiceException) {
-            vh.swipeRefreshLayout.setRefreshing(false);
-            vh.progressBar.setVisibility(View.GONE);
+            viewMain.hidePullToRefreshProgress();
+            viewMain.hideProgress();
             Toast.makeText(ActivityMain.this, R.string.networkRequestFailure, Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void onRequestSuccess(final CbrBankModel result) {
-            vh.swipeRefreshLayout.setRefreshing(false);
-            vh.progressBar.setVisibility(View.GONE);
-            mCbrBankModel = result;
-            fillList(mCbrBankModel.recordList);
+            viewMain.hidePullToRefreshProgress();
+            viewMain.hideProgress();
+            viewMain.fillList(result.recordList);
+            viewMainMenu.setListItemBankModels(viewMain.getListItemBankModels());
         }
     }
 
@@ -289,14 +151,14 @@ public class ActivityMain extends BaseSpiceActivity implements SearchView.OnQuer
         public void onRequestFailure(SpiceException spiceException) {
             Toast.makeText(ActivityMain.this, R.string.networkRequestFailure, Toast.LENGTH_SHORT).show();
             model.state = ListItemBankModel.State.REPEAT;
-            mAdapter.notifyItemChanged(position);
+            viewMain.notifyItemChanged(position);
         }
 
         @Override
         public void onRequestSuccess(final HtmlwebruBankModel result) {
             model.fillFromHtmlwebruBankModel(result);
             model.state = ListItemBankModel.State.FULL;
-            mAdapter.notifyItemChanged(position);
+            viewMain.notifyItemChanged(position);
         }
     }
 }

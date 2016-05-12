@@ -1,4 +1,4 @@
-package pro.rgun.banktestapp.screen.main;
+package pro.rgun.banktestapp.screen.main.view;
 
 import java.io.Serializable;
 

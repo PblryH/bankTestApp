@@ -1,4 +1,4 @@
-package pro.rgun.banktestapp.screen.main;
+package pro.rgun.banktestapp.screen.main.view;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
