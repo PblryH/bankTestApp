@@ -78,16 +78,15 @@
             android:layout_height="wrap_content"
             android:paddingBottom="@dimen/small"
             android:paddingTop="@dimen/small"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <ProgressBar
                 android:id="@+id/progress"
-                style="?android:attr/progressBarStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:indeterminate="true"
-                android:indeterminateDrawable="@drawable/progress" />
+                style="@style/Widget.AppCompat.ProgressBar"
+                android:layout_width="@dimen/medium"
+                android:layout_height="@dimen/medium"
+                android:layout_centerVertical="true" >
+            </ProgressBar>
 
             <TextView
                 android:layout_width="wrap_content"
